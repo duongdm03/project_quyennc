@@ -36,6 +36,7 @@ export default class UserManagementComponent implements OnInit {
   private modalService = inject(NgbModal);
 
   ngOnInit(): void {
+    console.log('Tao vừa vào ngoninit');
     this.handleNavigation();
   }
 

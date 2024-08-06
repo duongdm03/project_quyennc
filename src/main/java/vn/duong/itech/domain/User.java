@@ -13,96 +13,79 @@ import java.util.Locale;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
+import org.mapstruct.Builder;
 import vn.duong.itech.config.Constants;
 
 /**
  * A user.
  */
 @Entity
-@Table(name = "jhi_user")
-public class User extends AbstractAuditingEntity<Long> implements Serializable {
+@Table(name = "tbl_user")
+public class User extends AbstractAuditingEntity<Integer> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @NotNull
-    @Pattern(regexp = Constants.LOGIN_REGEX)
-    @Size(min = 1, max = 50)
-    @Column(length = 50, unique = true, nullable = false)
-    private String login;
+    @Size(min = 1, max = 50, message = "Ten dang nhap pahi tu 1 den 50 ki tu")
+    @Pattern(regexp = "^(?!.*\\\\s{2,})(?!^\\\\s)(?!.*\\\\s$).*$", message = "Ten dang nhap khong duoc chua khoang trang o dau va cuoi")
+    private String username;
 
-    @JsonIgnore
     @NotNull
     @Size(min = 60, max = 60)
-    @Column(name = "password_hash", length = 60, nullable = false)
+    @Column(name = "password", length = 60, nullable = false)
     private String password;
 
-    @Size(max = 50)
-    @Column(name = "first_name", length = 50)
-    private String firstName;
+    private String name;
 
-    @Size(max = 50)
-    @Column(name = "last_name", length = 50)
-    private String lastName;
+    private String phone;
 
-    @Email
-    @Size(min = 5, max = 254)
-    @Column(length = 254, unique = true)
     private String email;
 
-    @NotNull
-    @Column(nullable = false)
-    private boolean activated = false;
+    private String type;
 
-    @Size(min = 2, max = 10)
-    @Column(name = "lang_key", length = 10)
-    private String langKey;
+    private String address;
 
-    @Size(max = 256)
-    @Column(name = "image_url", length = 256)
-    private String imageUrl;
+    @Column(name = "province_id", length = 20)
+    private Integer provinceId;
 
-    @Size(max = 20)
-    @Column(name = "activation_key", length = 20)
+    @Column(name = "district_id", length = 20)
+    private Integer districtId;
+
+    @Column(name = "commune_id")
+    private Integer communeId;
+
+    @Column(name = "province_name", length = 20)
     @JsonIgnore
-    private String activationKey;
+    private String provinceName;
 
-    @Size(max = 20)
-    @Column(name = "reset_key", length = 20)
+    @Column(name = "district_name", length = 20)
     @JsonIgnore
-    private String resetKey;
+    private String districtName;
 
-    @Column(name = "reset_date")
-    private Instant resetDate = null;
+    @Column(name = "commune_name")
+    private String communeName;
 
-    @JsonIgnore
-    @ManyToMany
-    @JoinTable(
-        name = "jhi_user_authority",
-        joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") },
-        inverseJoinColumns = { @JoinColumn(name = "authority_name", referencedColumnName = "name") }
-    )
-    @BatchSize(size = 20)
-    private Set<Authority> authorities = new HashSet<>();
+    private boolean status;
 
-    public Long getId() {
+    @Override
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public String getLogin() {
-        return login;
+    public String getUsername() {
+        return username;
     }
 
-    // Lowercase the login before saving it in database
-    public void setLogin(String login) {
-        this.login = StringUtils.lowerCase(login, Locale.ENGLISH);
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -113,20 +96,20 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
         this.password = password;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getName() {
+        return name;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getEmail() {
@@ -137,91 +120,75 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
         this.email = email;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getType() {
+        return type;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public boolean isActivated() {
-        return activated;
+    public String getAddress() {
+        return address;
     }
 
-    public void setActivated(boolean activated) {
-        this.activated = activated;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public String getActivationKey() {
-        return activationKey;
+    public Integer getProvinceId() {
+        return provinceId;
     }
 
-    public void setActivationKey(String activationKey) {
-        this.activationKey = activationKey;
+    public void setProvinceId(Integer provinceId) {
+        this.provinceId = provinceId;
     }
 
-    public String getResetKey() {
-        return resetKey;
+    public Integer getDistrictId() {
+        return districtId;
     }
 
-    public void setResetKey(String resetKey) {
-        this.resetKey = resetKey;
+    public void setDistrictId(Integer districtId) {
+        this.districtId = districtId;
     }
 
-    public Instant getResetDate() {
-        return resetDate;
+    public Integer getCommuneId() {
+        return communeId;
     }
 
-    public void setResetDate(Instant resetDate) {
-        this.resetDate = resetDate;
+    public void setCommuneId(Integer communeId) {
+        this.communeId = communeId;
     }
 
-    public String getLangKey() {
-        return langKey;
+    public String getProvinceName() {
+        return provinceName;
     }
 
-    public void setLangKey(String langKey) {
-        this.langKey = langKey;
+    public void setProvinceName(String provinceName) {
+        this.provinceName = provinceName;
     }
 
-    public Set<Authority> getAuthorities() {
-        return authorities;
+    public String getDistrictName() {
+        return districtName;
     }
 
-    public void setAuthorities(Set<Authority> authorities) {
-        this.authorities = authorities;
+    public void setDistrictName(String districtName) {
+        this.districtName = districtName;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof User)) {
-            return false;
-        }
-        return id != null && id.equals(((User) o).id);
+    public String getCommuneName() {
+        return communeName;
     }
 
-    @Override
-    public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
-        return getClass().hashCode();
+    public void setCommuneName(String communeName) {
+        this.communeName = communeName;
     }
 
-    // prettier-ignore
-    @Override
-    public String toString() {
-        return "User{" +
-            "login='" + login + '\'' +
-            ", firstName='" + firstName + '\'' +
-            ", lastName='" + lastName + '\'' +
-            ", email='" + email + '\'' +
-            ", imageUrl='" + imageUrl + '\'' +
-            ", activated='" + activated + '\'' +
-            ", langKey='" + langKey + '\'' +
-            ", activationKey='" + activationKey + '\'' +
-            "}";
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 }

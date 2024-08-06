@@ -6,6 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.duong.itech.domain.User;
 import vn.duong.itech.repository.UserRepository;
@@ -14,6 +16,8 @@ import vn.duong.itech.service.MailService;
 import vn.duong.itech.service.UserService;
 import vn.duong.itech.service.dto.AdminUserDTO;
 import vn.duong.itech.service.dto.PasswordChangeDTO;
+import vn.duong.itech.service.dto.ResultDto;
+import vn.duong.itech.service.dto.user.RegisterRequest;
 import vn.duong.itech.web.rest.errors.*;
 import vn.duong.itech.web.rest.vm.KeyAndPasswordVM;
 import vn.duong.itech.web.rest.vm.ManagedUserVM;
@@ -49,19 +53,19 @@ public class AccountResource {
     /**
      * {@code POST  /register} : register the user.
      *
-     * @param managedUserVM the managed user View Model.
+     * @param registerRequest the managed user View Model.
      * @throws InvalidPasswordException {@code 400 (Bad Request)} if the password is incorrect.
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already used.
      * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already used.
      */
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
-        if (isPasswordLengthInvalid(managedUserVM.getPassword())) {
+    public ResponseEntity<ResultDto> registerAccount(@Valid @RequestBody RegisterRequest registerRequest, BindingResult bindingResult) {
+        if (isPasswordLengthInvalid(registerRequest.getPassword())) {
             throw new InvalidPasswordException();
         }
-        User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
-        mailService.sendActivationEmail(user);
+        ResultDto resultDto = userService.registerUser(registerRequest, bindingResult);
+        return new ResponseEntity<>(resultDto, HttpStatus.OK);
     }
 
     /**
@@ -86,10 +90,11 @@ public class AccountResource {
      */
     @GetMapping("/account")
     public AdminUserDTO getAccount() {
-        return userService
-            .getUserWithAuthorities()
-            .map(AdminUserDTO::new)
-            .orElseThrow(() -> new AccountResourceException("User could not be found"));
+        //        return userService
+        //            .getUserWithAuthorities()
+        //            .map(AdminUserDTO::new)
+        //            .orElseThrow(() -> new AccountResourceException("User could not be found"));
+        return null;
     }
 
     /**
@@ -103,11 +108,8 @@ public class AccountResource {
     public void saveAccount(@Valid @RequestBody AdminUserDTO userDTO) {
         String userLogin = SecurityUtils.getCurrentUserLogin()
             .orElseThrow(() -> new AccountResourceException("Current user login not found"));
-        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.orElseThrow().getLogin().equalsIgnoreCase(userLogin))) {
-            throw new EmailAlreadyUsedException();
-        }
-        Optional<User> user = userRepository.findOneByLogin(userLogin);
+
+        Optional<User> user = userRepository.findOneByUsername(userLogin);
         if (!user.isPresent()) {
             throw new AccountResourceException("User could not be found");
         }

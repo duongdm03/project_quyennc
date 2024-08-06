@@ -9,6 +9,7 @@ import locale from '@angular/common/locales/vi';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { fontAwesomeIcons } from './config/font-awesome-icons';
 import MainComponent from './layouts/main/main.component';
+import { ToastrModule } from 'ngx-toastr';
 
 @Component({
   standalone: true,

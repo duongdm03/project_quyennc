@@ -9,10 +9,10 @@ import vn.duong.itech.config.Constants;
  * Implementation of {@link AuditorAware} based on Spring Security.
  */
 @Component
-public class SpringSecurityAuditorAware implements AuditorAware<String> {
+public class SpringSecurityAuditorAware implements AuditorAware<Integer> {
 
     @Override
-    public Optional<String> getCurrentAuditor() {
-        return Optional.of(SecurityUtils.getCurrentUserLogin().orElse(Constants.SYSTEM));
+    public Optional<Integer> getCurrentAuditor() {
+        return Optional.of(0);
     }
 }

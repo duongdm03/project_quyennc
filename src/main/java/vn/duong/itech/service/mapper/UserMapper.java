@@ -33,7 +33,7 @@ public class UserMapper {
     }
 
     public AdminUserDTO userToAdminUserDTO(User user) {
-        return new AdminUserDTO(user);
+        return null;
     }
 
     public List<User> userDTOsToUsers(List<AdminUserDTO> userDTOs) {
@@ -46,19 +46,15 @@ public class UserMapper {
         } else {
             User user = new User();
             user.setId(userDTO.getId());
-            user.setLogin(userDTO.getLogin());
-            user.setFirstName(userDTO.getFirstName());
-            user.setLastName(userDTO.getLastName());
+
             user.setEmail(userDTO.getEmail());
-            user.setImageUrl(userDTO.getImageUrl());
-            user.setCreatedBy(userDTO.getCreatedBy());
+            //            user.setImageUrl(userDTO.getImageUrl());
+            //            user.setCreatedBy(userDTO.getCreatedBy());
             user.setCreatedDate(userDTO.getCreatedDate());
-            user.setLastModifiedBy(userDTO.getLastModifiedBy());
+            //            user.setLastModifiedBy(userDTO.getLastModifiedBy());
             user.setLastModifiedDate(userDTO.getLastModifiedDate());
-            user.setActivated(userDTO.isActivated());
-            user.setLangKey(userDTO.getLangKey());
+
             Set<Authority> authorities = this.authoritiesFromStrings(userDTO.getAuthorities());
-            user.setAuthorities(authorities);
             return user;
         }
     }
@@ -85,7 +81,7 @@ public class UserMapper {
             return null;
         }
         User user = new User();
-        user.setId(id);
+        //        user.setId(id);
         return user;
     }
 
@@ -127,7 +123,7 @@ public class UserMapper {
         }
         UserDTO userDto = new UserDTO();
         userDto.setId(user.getId());
-        userDto.setLogin(user.getLogin());
+        //        userDto.setLogin(user.getLogin());
         return userDto;
     }
 

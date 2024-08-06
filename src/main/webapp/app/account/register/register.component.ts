@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, inject, signal, viewChild, OnInit, OnDestroy } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -8,6 +8,9 @@ import { EMAIL_ALREADY_USED_TYPE, LOGIN_ALREADY_USED_TYPE } from 'app/config/err
 import SharedModule from 'app/shared/shared.module';
 import PasswordStrengthBarComponent from '../password/password-strength-bar/password-strength-bar.component';
 import { RegisterService } from './register.service';
+import { NgbToast } from '@ng-bootstrap/ng-bootstrap';
+import { Toast, ToastrService } from 'ngx-toastr';
+import { To } from 'copy-webpack-plugin';
 
 @Component({
   standalone: true,
@@ -15,7 +18,16 @@ import { RegisterService } from './register.service';
   imports: [SharedModule, RouterModule, FormsModule, ReactiveFormsModule, PasswordStrengthBarComponent],
   templateUrl: './register.component.html',
 })
-export default class RegisterComponent implements AfterViewInit {
+export default class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
+  user: any = {};
+  constructor(
+    private toast: ToastrService,
+    private registerService: RegisterService,
+  ) {}
+  ngOnInit(): void {
+    throw new Error('Method not implemented.');
+    this.user = {};
+  }
   login = viewChild.required<ElementRef>('login');
 
   doNotMatch = signal(false);
@@ -49,27 +61,25 @@ export default class RegisterComponent implements AfterViewInit {
   });
 
   private translateService = inject(TranslateService);
-  private registerService = inject(RegisterService);
+  // private registerService = inject(RegisterService);
+  // private toastrService = inject(ToastrService);
+  // private toast = inject(ToastrService);
 
   ngAfterViewInit(): void {
     this.login().nativeElement.focus();
   }
 
   register(): void {
-    this.doNotMatch.set(false);
-    this.error.set(false);
-    this.errorEmailExists.set(false);
-    this.errorUserExists.set(false);
-
-    const { password, confirmPassword } = this.registerForm.getRawValue();
-    if (password !== confirmPassword) {
-      this.doNotMatch.set(true);
-    } else {
-      const { login, email } = this.registerForm.getRawValue();
-      this.registerService
-        .save({ login, email, password, langKey: this.translateService.currentLang })
-        .subscribe({ next: () => this.success.set(true), error: response => this.processError(response) });
-    }
+    this.registerService.save(this.user).subscribe((req: any) => {
+      console.log(req);
+      if (req.status) {
+        this.toast.success(req.message);
+        console.log(req.message);
+      } else {
+        this.toast.error(req.message);
+        console.log(req.message);
+      }
+    });
   }
 
   private processError(response: HttpErrorResponse): void {
@@ -81,4 +91,6 @@ export default class RegisterComponent implements AfterViewInit {
       this.error.set(true);
     }
   }
+
+  ngOnDestroy(): void {}
 }

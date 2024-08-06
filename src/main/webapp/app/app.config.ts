@@ -23,6 +23,7 @@ import routes from './app.routes';
 // jhipster-needle-angular-add-module-import JHipster will add new module here
 import { NgbDateDayjsAdapter } from './config/datepicker-adapter';
 import { AppPageTitleStrategy } from './app-page-title-strategy';
+import { ToastrModule } from 'ngx-toastr';
 
 const routerFeatures: Array<RouterFeatures> = [
   withComponentInputBinding(),
@@ -50,6 +51,7 @@ export const appConfig: ApplicationConfig = {
     // Set this to true to enable service worker (PWA)
     importProvidersFrom(ServiceWorkerModule.register('ngsw-worker.js', { enabled: false })),
     importProvidersFrom(TranslationModule),
+    importProvidersFrom(ToastrModule.forRoot()),
     provideHttpClient(withInterceptorsFromDi()),
     Title,
     { provide: LOCALE_ID, useValue: 'vi' },

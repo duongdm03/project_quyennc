@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.web.bind.annotation.*;
+import vn.duong.itech.repository.UserRepository;
 import vn.duong.itech.web.rest.vm.LoginVM;
 
 /**
@@ -37,6 +38,7 @@ public class AuthenticateController {
     private static final Logger log = LoggerFactory.getLogger(AuthenticateController.class);
 
     private final JwtEncoder jwtEncoder;
+    private final UserRepository userRepository;
 
     @Value("${jhipster.security.authentication.jwt.token-validity-in-seconds:0}")
     private long tokenValidityInSeconds;
@@ -46,9 +48,15 @@ public class AuthenticateController {
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    public AuthenticateController(JwtEncoder jwtEncoder, AuthenticationManagerBuilder authenticationManagerBuilder) {
+    public AuthenticateController(
+        JwtEncoder jwtEncoder,
+        AuthenticationManagerBuilder authenticationManagerBuilder,
+        UserRepository userRepository,
+        UserRepository userRepository1
+    ) {
         this.jwtEncoder = jwtEncoder;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
+        this.userRepository = userRepository1;
     }
 
     @PostMapping("/authenticate")
@@ -60,7 +68,7 @@ public class AuthenticateController {
 
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = this.createToken(authentication, loginVM.isRememberMe());
+        String jwt = this.createToken(authentication, loginVM.isRememberMe(), loginVM);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(jwt);
         return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
@@ -78,11 +86,12 @@ public class AuthenticateController {
         return request.getRemoteUser();
     }
 
-    public String createToken(Authentication authentication, boolean rememberMe) {
+    public String createToken(Authentication authentication, boolean rememberMe, @Valid LoginVM loginVM) {
         String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
 
         Instant now = Instant.now();
         Instant validity;
+        // set thoi gian het han cho token
         if (rememberMe) {
             validity = now.plus(this.tokenValidityInSecondsForRememberMe, ChronoUnit.SECONDS);
         } else {
@@ -90,14 +99,19 @@ public class AuthenticateController {
         }
 
         // @formatter:off
+        // set value cho token
+        Integer userId = userRepository.getIdByUserName(loginVM.getUsername());
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuedAt(now)
-            .expiresAt(validity)
+            .expiresAt(validity) //expirestAt : thoi gian het han
             .subject(authentication.getName())
-            .claim(AUTHORITIES_KEY, authorities)
+            .claim(AUTHORITIES_KEY, authorities) //claim : cac value co trong token
+            .claim("userId", userId) //claim : cac value co trong token
             .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
+        // buoc tao ra token
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }
 
